@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Product } from "@prisma/client";
 import { formatDate } from "@/lib/utils";
 import { IoPencil } from "react-icons/io5";
@@ -22,7 +22,7 @@ export function DataViewLayout() {
   const query = searchParams.get("query") || "";
   const page = Number(searchParams.get("page")) || 1;
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const res = await fetch(`/api/products?query=${query}&page=${page}`);
       const result = await res.json();
@@ -33,11 +33,11 @@ export function DataViewLayout() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [query, page]);
 
   useEffect(() => {
     fetchData();
-  }, [query, page]);
+  }, [fetchData]);
 
   const handleEditClick = (product: Product) => {
     setSelectedProduct(product);
