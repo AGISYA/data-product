@@ -4,18 +4,23 @@
 import { useState } from "react";
 
 export function FormInputLayout() {
+  const categories = ["Makanan", "Minuman"];
+
   const [formData, setFormData] = useState({
     name: "",
     price: "",
     description: "",
     stock: "",
+    category: "",
   });
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -25,9 +30,9 @@ export function FormInputLayout() {
     setLoading(true);
     setMessage("");
 
-    const { name, price, description, stock } = formData;
+    const { name, price, description, stock, category } = formData;
 
-    if (!name || !price || !description || !stock) {
+    if (!name || !price || !description || !stock || !category) {
       setMessage("Semua field harus diisi.");
       setLoading(false);
       return;
@@ -42,13 +47,20 @@ export function FormInputLayout() {
           price: parseFloat(price),
           description,
           stock: parseInt(stock),
+          category,
         }),
       });
 
       if (!res.ok) throw new Error("Gagal menyimpan produk");
 
       setMessage("Produk berhasil disimpan!");
-      setFormData({ name: "", price: "", description: "", stock: "" }); // reset form
+      setFormData({
+        name: "",
+        price: "",
+        description: "",
+        stock: "",
+        category: "",
+      });
     } catch (error) {
       setMessage("Terjadi kesalahan saat menyimpan.");
     } finally {
@@ -122,6 +134,26 @@ export function FormInputLayout() {
             placeholder="Masukkan jumlah stok"
             className="w-full px-3 py-2 border border-gray-300 rounded-md"
           />
+        </div>
+
+        <div className="mb-6">
+          <label htmlFor="category" className="block mb-2 font-medium">
+            Kategori
+          </label>
+          <select
+            id="category"
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+          >
+            <option value="">Pilih kategori</option>
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
         </div>
 
         {message && (

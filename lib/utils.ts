@@ -29,3 +29,31 @@ export const generatePagination = (currentPage: number, totalPages: number) => {
 
 
 }
+
+
+// export const uploadImage = async (formData: FormData) => { console.log(formData) }
+
+// const UploadSchema = z.object({
+//     image: z
+//         .instanceof(File)
+//         .refine((file) = file.size > 0, { message: "Image is required" })
+//         .refine((file) => file.type.startsWith("image/"), {
+//             message: "Only images are allowed"
+//         })
+//         .refine((file) => file.size < 4000000, {
+//             message: "Image must less than 4mb",
+//         })
+
+// })
+
+// export const uploadImage = async (prevState: unknown, formData: FormData) => {
+//     const validatedFields = UploadSchema.safeParse(
+//         Object.fromEntries(formData.entries())
+//     )
+
+//     if (!validatedFields.success) {
+//         return {
+//             error: validatedFields.error.flatten().fieldErrors
+//         }
+//     }
+// }

@@ -19,6 +19,7 @@ export default function EditModal({
   const [price, setPrice] = useState(product.price);
   const [description, setDescription] = useState(product.description);
   const [stock, setStock] = useState(product.stock);
+  const [category, setCategory] = useState(product.category || "Makanan");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +29,7 @@ export default function EditModal({
       price,
       description,
       stock,
+      category,
     });
   };
 
@@ -71,6 +73,18 @@ export default function EditModal({
               className="w-full p-2 border rounded-md"
             />
           </div>
+          <div>
+            <label className="block text-sm font-medium">Kategori</label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full p-2 border rounded-md"
+            >
+              <option value="Makanan">Makanan</option>
+              <option value="Minuman">Minuman</option>
+            </select>
+          </div>
+
           <div className="flex justify-end gap-2 pt-4">
             <button
               type="button"

@@ -49,10 +49,10 @@ export async function GET(req: NextRequest) {
 // POST: Tambah produk
 export async function POST(req: Request) {
     try {
-        const { name, price, description, stock } = await req.json();
+        const { name, price, description, stock, category } = await req.json();
 
         // Validasi input
-        if (!name || price === undefined || !description || stock === undefined) {
+        if (!name || price === undefined || !description || stock === undefined || !category) {
             return NextResponse.json({ error: "Semua field harus diisi." }, { status: 400 });
         }
 
@@ -62,6 +62,7 @@ export async function POST(req: Request) {
                 price: parseFloat(price),
                 description,
                 stock: parseInt(stock),
+                category, // Pastikan kategori juga disertakan di sini
             },
         });
 

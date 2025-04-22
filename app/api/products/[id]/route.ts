@@ -2,6 +2,7 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
+// DELETE: Hapus produk berdasarkan ID
 export async function DELETE(req: NextRequest) {
     try {
         const url = new URL(req.url);
@@ -22,7 +23,6 @@ export async function DELETE(req: NextRequest) {
     }
 }
 
-
 // PUT: Update produk berdasarkan ID
 export async function PUT(req: NextRequest) {
     try {
@@ -31,9 +31,9 @@ export async function PUT(req: NextRequest) {
         const id = Number(parts[parts.length - 1]);
 
         const body = await req.json();
-        const { name, price, description, stock } = body;
+        const { name, price, description, stock, category } = body;
 
-        if (!name || price === undefined || !description || stock === undefined) {
+        if (!name || price === undefined || !description || stock === undefined || !category) {
             return NextResponse.json({ error: "Semua field harus diisi." }, { status: 400 });
         }
 
@@ -52,6 +52,7 @@ export async function PUT(req: NextRequest) {
                 price: parseFloat(price),
                 description,
                 stock: parseInt(stock),
+                category, // 🟢 Ini bagian penting untuk update kategori
             },
         });
 

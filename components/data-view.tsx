@@ -78,6 +78,7 @@ export function DataViewLayout() {
                   <th className="px-6 py-4">Harga</th>
                   <th className="px-6 py-4">Deskripsi</th>
                   <th className="px-6 py-4">Stok</th>
+                  <th className="px-6 py-4">kategori</th>
                   <th className="px-6 py-4">Dibuat Pada</th>
                   <th className="px-6 py-4">Aksi</th>
                 </tr>
@@ -98,6 +99,9 @@ export function DataViewLayout() {
                       {product.description}
                     </td>
                     <td className="px-6 py-4 text-gray-800">{product.stock}</td>
+                    <td className="px-6 py-4 text-gray-800">
+                      {product.category}
+                    </td>
                     <td className="px-6 py-4 text-gray-800 whitespace-nowrap">
                       {formatDate(product.createdAt.toString())}
                     </td>
@@ -127,10 +131,7 @@ export function DataViewLayout() {
 
       {showModal && (
         <>
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-10"
-            onClick={handleCloseModal}
-          />
+          <div className="fixed inset-0 z-10" onClick={handleCloseModal} />
           {selectedProduct && (
             <EditModal
               product={selectedProduct}
