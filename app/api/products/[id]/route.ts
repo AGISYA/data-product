@@ -2,10 +2,11 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-// DELETE: Hapus produk berdasarkan ID
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest) {
     try {
-        const id = Number(params.id);
+        const url = new URL(req.url);
+        const parts = url.pathname.split('/');
+        const id = Number(parts[parts.length - 1]);
 
         if (!id) {
             return NextResponse.json({ error: "ID tidak valid." }, { status: 400 });
@@ -21,15 +22,15 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 }
 
-// PUT: Update produk berdasarkan ID
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-    try {
-        const id = Number(params.id);
-        const body = await req.json();
-        console.log("params.id:", params.id);
-        console.log("Parsed id:", id);
-        console.log("Body:", body);
 
+// PUT: Update produk berdasarkan ID
+export async function PUT(req: NextRequest) {
+    try {
+        const url = new URL(req.url);
+        const parts = url.pathname.split('/');
+        const id = Number(parts[parts.length - 1]);
+
+        const body = await req.json();
         const { name, price, description, stock } = body;
 
         if (!name || price === undefined || !description || stock === undefined) {
@@ -60,4 +61,3 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         return NextResponse.json({ error: "Gagal mengupdate produk." }, { status: 500 });
     }
 }
-
