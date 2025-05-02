@@ -9,6 +9,7 @@ import { DeletButton } from "./button";
 import EditModal from "./edit-modal";
 import { useSearchParams } from "next/navigation";
 import Pagination from "./pagination";
+import Image from "next/image";
 
 export function DataViewLayout() {
   const [data, setData] = useState<Product[]>([]);
@@ -17,11 +18,9 @@ export function DataViewLayout() {
   const [error, setError] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showModal, setShowModal] = useState(false);
-
   const searchParams = useSearchParams();
   const query = searchParams.get("query") || "";
   const page = Number(searchParams.get("page")) || 1;
-
   const fetchData = useCallback(async () => {
     try {
       const res = await fetch(`/api/products?query=${query}&page=${page}`);
@@ -74,6 +73,8 @@ export function DataViewLayout() {
               <thead className="bg-gray-100 text-left text-gray-600 uppercase tracking-wide">
                 <tr>
                   <th className="px-6 py-4">No</th>
+                  <th className="px-6 py-4">Gambar</th>{" "}
+                  {/* saya menambahkan image */}
                   <th className="px-6 py-4">Nama Produk</th>
                   <th className="px-6 py-4">Harga</th>
                   <th className="px-6 py-4">Deskripsi</th>
@@ -88,6 +89,15 @@ export function DataViewLayout() {
                   <tr key={product.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 text-gray-700 font-medium">
                       {(page - 1) * 5 + index + 1}
+                    </td>
+                    <td className="px-6 py-4">
+                      <Image
+                        src={product.image || "/path/to/default/image.jpg"} // Gambar default jika image tidak ada
+                        alt={product.name}
+                        width={64} // Ukuran lebar gambar
+                        height={64} // Ukuran tinggi gambar
+                        className="object-cover rounded" // Class tambahan untuk styling
+                      />
                     </td>
                     <td className="px-6 py-4 text-gray-800 whitespace-nowrap">
                       {product.name}
@@ -136,11 +146,12 @@ export function DataViewLayout() {
             <EditModal
               product={selectedProduct}
               onClose={handleCloseModal}
-              onSubmit={async (updatedProduct) => {
-                await fetch(`/api/products/${updatedProduct.id}`, {
+              onSubmit={async (formData) => {
+                if (!selectedProduct) return;
+
+                await fetch(`/api/products/${selectedProduct.id}`, {
                   method: "PUT",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(updatedProduct),
+                  body: formData, // tidak perlu stringify
                 });
                 fetchData();
                 handleCloseModal();

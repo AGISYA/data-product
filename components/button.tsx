@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { IoPencil, IoTrashOutline } from "react-icons/io5";
+import { IoPencil, IoTrashOutline, IoImageOutline } from "react-icons/io5";
 import { ReactNode } from "react";
 
 interface ButtonProps {
@@ -31,13 +31,12 @@ export const EditButton = ({ onClick }: { onClick: () => void }) => {
   );
 };
 
-// ✅ Perubahan dimulai di sini
 const DeletButton = ({
   id,
   onDeleteSuccess,
 }: {
   id: string;
-  onDeleteSuccess?: () => void; // Tambahkan prop onDeleteSuccess
+  onDeleteSuccess?: () => void;
 }) => {
   const [error, setError] = useState<string | null>(null);
 
@@ -47,7 +46,7 @@ const DeletButton = ({
       return;
     }
 
-    const confirmDelete = confirm("Yakin ingin menghapus data ini?");
+    const confirmDelete = confirm("Yakin ingin menghapus produk?");
     if (!confirmDelete) return;
 
     try {
@@ -56,21 +55,20 @@ const DeletButton = ({
       });
 
       if (response.ok) {
-        console.log("Data berhasil dihapus");
-        onDeleteSuccess?.(); // ✅ Panggil fungsi jika ada
+        onDeleteSuccess?.();
       } else {
         const data = await response.json();
-        setError(data.error || "Gagal menghapus data");
+        setError(data.error || "Gagal menghapus produk");
       }
     } catch (error) {
-      setError("Terjadi kesalahan saat menghapus data");
+      setError("Terjadi kesalahan saat menghapus produk");
       console.error("Terjadi kesalahan:", error);
     }
   };
 
   return (
     <div>
-      {error && <p className="text-red-500">{error}</p>}
+      {error && <p className="text-red-500 text-sm">{error}</p>}
       <button
         onClick={handleDelete}
         className="rounded-sm border p-1 hover:bg-gray-100"
@@ -81,4 +79,49 @@ const DeletButton = ({
   );
 };
 
-export { DeletButton };
+// ✅ Tombol untuk hapus gambar saja
+const DeleteImageButton = ({
+  id,
+  onImageDeleted,
+}: {
+  id: string;
+  onImageDeleted?: () => void;
+}) => {
+  const [error, setError] = useState<string | null>(null);
+
+  const handleDeleteImage = async () => {
+    const confirmDelete = confirm("Yakin ingin menghapus gambar produk ini?");
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch(`/api/products/${id}/image`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        onImageDeleted?.();
+      } else {
+        const data = await response.json();
+        setError(data.error || "Gagal menghapus gambar");
+      }
+    } catch (error) {
+      setError("Terjadi kesalahan saat menghapus gambar");
+      console.error("Error:", error);
+    }
+  };
+
+  return (
+    <div>
+      {error && <p className="text-red-500 text-sm">{error}</p>}
+      <button
+        onClick={handleDeleteImage}
+        className="rounded-sm border p-1 hover:bg-red-100 text-red-500"
+        title="Hapus Gambar"
+      >
+        <IoImageOutline size={20} />
+      </button>
+    </div>
+  );
+};
+
+export { DeletButton, DeleteImageButton };

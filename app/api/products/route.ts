@@ -3,6 +3,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from "@/lib/prisma";
 import { Prisma } from '@prisma/client';
+import { writeFile } from "fs/promises";
+import path from "path";
 
 const ITEM_PER_PAGE = 5;
 
@@ -46,28 +48,43 @@ export async function GET(req: NextRequest) {
 }
 
 
-// POST: Tambah produk
+
 export async function POST(req: Request) {
     try {
-        const { name, price, description, stock, category } = await req.json();
+        const formData = await req.formData();
+        const name = formData.get("name") as string;
+        const price = parseFloat(formData.get("price") as string);
+        const description = formData.get("description") as string;
+        const stock = parseInt(formData.get("stock") as string);
+        const category = formData.get("category") as string;
+        const file = formData.get("image") as File;
 
-        // Validasi input
-        if (!name || price === undefined || !description || stock === undefined || !category) {
+        if (!name || isNaN(price) || !description || isNaN(stock) || !category || !file) {
             return NextResponse.json({ error: "Semua field harus diisi." }, { status: 400 });
         }
+
+        // Save image
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+        const filename = `${Date.now()}-${file.name.replace(/\s+/g, "_")}`;
+        const filePath = path.join(process.cwd(), "public", "uploads", filename);
+        await writeFile(filePath, buffer);
+        const imageUrl = `/uploads/${filename}`;
 
         const product = await prisma.product.create({
             data: {
                 name,
-                price: parseFloat(price),
+                price,
                 description,
-                stock: parseInt(stock),
-                category, // Pastikan kategori juga disertakan di sini
+                stock,
+                category,
+                image: imageUrl,
             },
         });
 
         return NextResponse.json(product);
     } catch (error) {
+        console.error(error);
         return NextResponse.json({ error: "Gagal menambahkan produk" }, { status: 500 });
     }
 }

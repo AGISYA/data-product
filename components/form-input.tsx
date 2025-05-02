@@ -14,6 +14,7 @@ export function FormInputLayout() {
     category: "",
   });
 
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -26,29 +27,35 @@ export function FormInputLayout() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setImageFile(file);
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
     setMessage("");
 
     const { name, price, description, stock, category } = formData;
 
-    if (!name || !price || !description || !stock || !category) {
-      setMessage("Semua field harus diisi.");
+    if (!name || !price || !description || !stock || !category || !imageFile) {
+      setMessage("Semua field dan gambar harus diisi.");
       setLoading(false);
       return;
     }
 
     try {
+      const data = new FormData();
+      data.append("name", name);
+      data.append("price", price);
+      data.append("description", description);
+      data.append("stock", stock);
+      data.append("category", category);
+      data.append("image", imageFile);
+
       const res = await fetch("/api/products", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          price: parseFloat(price),
-          description,
-          stock: parseInt(stock),
-          category,
-        }),
+        body: data,
       });
 
       if (!res.ok) throw new Error("Gagal menyimpan produk");
@@ -61,6 +68,7 @@ export function FormInputLayout() {
         stock: "",
         category: "",
       });
+      setImageFile(null);
     } catch (error) {
       setMessage("Terjadi kesalahan saat menyimpan.");
     } finally {
@@ -154,6 +162,19 @@ export function FormInputLayout() {
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="mb-6">
+          <label htmlFor="image" className="block mb-2 font-medium">
+            Gambar Produk
+          </label>
+          <input
+            type="file"
+            id="image"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+          />
         </div>
 
         {message && (
