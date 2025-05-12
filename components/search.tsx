@@ -26,7 +26,7 @@ export default function Search() {
       <input
         type="text"
         className="w-full border border-gray-200 py-2 pl-10 text-sm outline-2 rounded-sm"
-        placeholder="Cari data siswa..."
+        placeholder="Cari product..."
         onChange={(e) => handleSearch(e.target.value)}
         defaultValue={SearchParams.get("query")?.toString()}
       />

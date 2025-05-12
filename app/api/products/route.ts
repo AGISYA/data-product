@@ -1,13 +1,18 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { Prisma } from '@prisma/client';
-import { writeFile } from "fs/promises";
+import { Prisma } from "@prisma/client";
+import { writeFile, mkdir } from "fs/promises";
 import path from "path";
+import fs from "fs";
 
 const ITEM_PER_PAGE = 5;
 
+function logError(prefix: string, error: unknown) {
+    console.error(`${prefix}:`, error);
+}
+
+// GET Products
 export async function GET(req: NextRequest) {
     try {
         const { searchParams } = new URL(req.url);
@@ -24,31 +29,24 @@ export async function GET(req: NextRequest) {
         const [products, totalCount] = await Promise.all([
             prisma.product.findMany({
                 where,
-                orderBy: {
-                    createdAt: "desc",
-                },
+                orderBy: { createdAt: "desc" },
                 skip: (page - 1) * ITEM_PER_PAGE,
                 take: ITEM_PER_PAGE,
             }),
             prisma.product.count({ where }),
         ]);
 
-        const totalPages = Math.ceil(totalCount / ITEM_PER_PAGE);
-
         return NextResponse.json({
             products,
-            totalPages,
+            totalPages: Math.ceil(totalCount / ITEM_PER_PAGE),
         });
     } catch (error) {
-        return NextResponse.json(
-            { error: "Gagal mengambil data produk" },
-            { status: 500 }
-        );
+        logError("GET /api/products", error);
+        return NextResponse.json({ error: "Gagal mengambil data produk" }, { status: 500 });
     }
 }
 
-
-
+// POST Product
 export async function POST(req: Request) {
     try {
         const formData = await req.formData();
@@ -63,28 +61,24 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Semua field harus diisi." }, { status: 400 });
         }
 
-        // Save image
+        const uploadDir = path.join(process.cwd(), "public", "uploads");
+        if (!fs.existsSync(uploadDir)) await mkdir(uploadDir, { recursive: true });
+
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
         const filename = `${Date.now()}-${file.name.replace(/\s+/g, "_")}`;
-        const filePath = path.join(process.cwd(), "public", "uploads", filename);
+        const filePath = path.join(uploadDir, filename);
         await writeFile(filePath, buffer);
+
         const imageUrl = `/uploads/${filename}`;
 
         const product = await prisma.product.create({
-            data: {
-                name,
-                price,
-                description,
-                stock,
-                category,
-                image: imageUrl,
-            },
+            data: { name, price, description, stock, category, image: imageUrl },
         });
 
         return NextResponse.json(product);
     } catch (error) {
-        console.error(error);
+        logError("POST /api/products", error);
         return NextResponse.json({ error: "Gagal menambahkan produk" }, { status: 500 });
     }
 }

@@ -73,7 +73,7 @@ export function DataViewLayout() {
               <thead className="bg-gray-100 text-left text-gray-600 uppercase tracking-wide">
                 <tr>
                   <th className="px-6 py-4">No</th>
-                  <th className="px-6 py-4">Gambar</th>{" "}
+                  <th className="px-6 py-4">Gambar</th>
                   {/* saya menambahkan image */}
                   <th className="px-6 py-4">Nama Produk</th>
                   <th className="px-6 py-4">Harga</th>

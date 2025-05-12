@@ -21,7 +21,6 @@ export default function Home() {
         <div className="p-6">
           {activeTab === "input" ? (
             <Suspense fallback={<p>Loading feed...</p>}>
-              {" "}
               <FormInputLayout />
             </Suspense>
           ) : (
