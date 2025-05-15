@@ -18,9 +18,11 @@ export function DataViewLayout() {
   const [error, setError] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showModal, setShowModal] = useState(false);
+
   const searchParams = useSearchParams();
   const query = searchParams.get("query") || "";
   const page = Number(searchParams.get("page")) || 1;
+
   const fetchData = useCallback(async () => {
     try {
       const res = await fetch(`/api/products?query=${query}&page=${page}`);
@@ -46,6 +48,14 @@ export function DataViewLayout() {
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedProduct(null);
+  };
+
+  // Fungsi aman untuk path gambar
+  const cleanImagePath = (image?: string | null): string => {
+    if (!image) return "/default.jpg"; // fallback image
+    return image.startsWith("/uploads/")
+      ? image
+      : `/uploads/${image.replace(/^\/+/, "")}`;
   };
 
   if (loading) {
@@ -74,12 +84,11 @@ export function DataViewLayout() {
                 <tr>
                   <th className="px-6 py-4">No</th>
                   <th className="px-6 py-4">Gambar</th>
-                  {/* saya menambahkan image */}
                   <th className="px-6 py-4">Nama Produk</th>
                   <th className="px-6 py-4">Harga</th>
                   <th className="px-6 py-4">Deskripsi</th>
                   <th className="px-6 py-4">Stok</th>
-                  <th className="px-6 py-4">kategori</th>
+                  <th className="px-6 py-4">Kategori</th>
                   <th className="px-6 py-4">Dibuat Pada</th>
                   <th className="px-6 py-4">Aksi</th>
                 </tr>
@@ -92,11 +101,11 @@ export function DataViewLayout() {
                     </td>
                     <td className="px-6 py-4">
                       <Image
-                        src={product.image || "/path/to/default/image.jpg"} // Gambar default jika image tidak ada
+                        src={cleanImagePath(product.image)}
                         alt={product.name}
-                        width={64} // Ukuran lebar gambar
-                        height={64} // Ukuran tinggi gambar
-                        className="object-cover rounded" // Class tambahan untuk styling
+                        width={64}
+                        height={64}
+                        className="object-cover rounded"
                       />
                     </td>
                     <td className="px-6 py-4 text-gray-800 whitespace-nowrap">
@@ -151,7 +160,7 @@ export function DataViewLayout() {
 
                 await fetch(`/api/products/${selectedProduct.id}`, {
                   method: "PUT",
-                  body: formData, // tidak perlu stringify
+                  body: formData,
                 });
                 fetchData();
                 handleCloseModal();
