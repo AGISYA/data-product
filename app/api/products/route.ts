@@ -5,12 +5,26 @@ import { Prisma } from "@prisma/client";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import fs from "fs";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { v4 as uuidv4 } from 'uuid';
 
 const ITEM_PER_PAGE = 5;
 
 function logError(prefix: string, error: unknown) {
     console.error(`${prefix}:`, error);
 }
+
+
+
+const s3 = new S3Client({
+    region: process.env.AWS_REGION!,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    },
+    endpoint: process.env.AWS_ENDPOINT
+});
+
 
 // GET Products
 export async function GET(req: NextRequest) {
@@ -61,16 +75,36 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Semua field harus diisi." }, { status: 400 });
         }
 
-        const uploadDir = path.join(process.cwd(), "public", "uploads");
-        if (!fs.existsSync(uploadDir)) await mkdir(uploadDir, { recursive: true });
+        // const uploadDir = path.join(process.cwd(), "public", "uploads");
+        // if (!fs.existsSync(uploadDir)) await mkdir(uploadDir, { recursive: true });
 
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-        const filename = `${Date.now()}-${file.name.replace(/\s+/g, "_")}`;
-        const filePath = path.join(uploadDir, filename);
-        await writeFile(filePath, buffer);
+        // const bytes = await file.arrayBuffer();
+        // const buffer = Buffer.from(bytes);
+        // const filename = `${Date.now()}-${file.name.replace(/\s+/g, "_")}`;
+        // const filePath = path.join(uploadDir, filename);
+        // await writeFile(filePath, buffer);
 
-        const imageUrl = `/uploads/${filename}`;
+        // const imageUrl = `/uploads/${filename}`;
+
+
+        // Proses upload ke S3
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${uuidv4()}.${fileExt}`;
+        const contentType = file.type;
+
+        await s3.send(
+            new PutObjectCommand({
+                Bucket: process.env.AWS_BUCKET_NAME!,
+                Key: fileName,
+                Body: buffer,
+                ContentType: contentType,
+                ACL: 'public-read',
+            })
+        );
+
+        const imageUrl = `${process.env.AWS_ENDPOINT}/${process.env.AWS_BUCKET_NAME}/${fileName}`;
+
 
         const product = await prisma.product.create({
             data: { name, price, description, stock, category, image: imageUrl },

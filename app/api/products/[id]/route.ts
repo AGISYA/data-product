@@ -4,6 +4,19 @@ import fs from "fs";
 import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { v4 as uuidv4 } from 'uuid';
+
+
+const s3 = new S3Client({
+    region: process.env.AWS_REGION!,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    },
+    endpoint: process.env.AWS_ENDPOINT
+});
+
 
 // Utility: Simpan Gambar
 async function saveImage(file: File) {
@@ -40,9 +53,30 @@ export async function PUT(req: NextRequest) {
         }
 
         let imageUrl: string | undefined = undefined;
+
         if (file && file.size > 0) {
-            imageUrl = await saveImage(file);
+            const buffer = Buffer.from(await file.arrayBuffer());
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Date.now()}-${uuidv4()}.${fileExt}`;
+            const contentType = file.type;
+
+            await s3.send(
+                new PutObjectCommand({
+                    Bucket: process.env.AWS_BUCKET_NAME!,
+                    Key: fileName,
+                    Body: buffer,
+                    ContentType: contentType,
+                    ACL: 'public-read',
+                })
+            );
+
+            imageUrl = `${process.env.AWS_ENDPOINT}/${process.env.AWS_BUCKET_NAME}/${fileName}`;
+
         }
+
+
+
+
 
         const updated = await prisma.product.update({
             where: { id },
@@ -55,6 +89,7 @@ export async function PUT(req: NextRequest) {
                 ...(imageUrl && { image: imageUrl }),
             },
         });
+
 
         return NextResponse.json(updated);
     } catch (error) {
