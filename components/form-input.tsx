@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { uploadImageToS3 } from "@/lib/utilities";
 import { useState } from "react";
 
 export function FormInputLayout() {
@@ -45,13 +44,6 @@ export function FormInputLayout() {
       return;
     }
 
-    const file = imageFile;
-    let imageUrl = "";
-
-    if (file) {
-      imageUrl = await uploadImageToS3(file);
-    }
-
     try {
       const data = new FormData();
       data.append("name", name);
@@ -59,7 +51,7 @@ export function FormInputLayout() {
       data.append("description", description);
       data.append("stock", stock);
       data.append("category", category);
-      data.append("image", imageUrl);
+      data.append("image", imageFile);
 
       const res = await fetch("/api/products", {
         method: "POST",

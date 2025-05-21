@@ -5,7 +5,6 @@ import type React from "react";
 import { useState, useRef } from "react";
 import type { Product } from "@prisma/client";
 import Image from "next/image";
-import { uploadImageToS3 } from "@/lib/utilities";
 
 interface EditModalProps {
   product: Product;
@@ -36,24 +35,15 @@ export default function EditModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const file = imageRef.current!.files![0];
-    let imageUrl = "";
-
-    if (file) {
-      imageUrl = await uploadImageToS3(file);
-    }
-
     const formData = new FormData();
     formData.append("name", name);
     formData.append("price", String(price));
     formData.append("description", description);
     formData.append("stock", String(stock));
     formData.append("category", category);
-    formData.append("image", imageUrl);
-
-    // if (imageRef.current?.files?.[0]) {
-    //   formData.append("image", imageRef.current.files[0]);
-    // }
+    if (imageRef.current?.files?.[0]) {
+      formData.append("image", imageRef.current.files[0]);
+    }
 
     const response = await fetch(`/api/products/${product.id}`, {
       method: "PUT",
