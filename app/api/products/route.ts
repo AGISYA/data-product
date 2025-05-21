@@ -69,6 +69,8 @@ export async function POST(req: Request) {
         const description = formData.get("description") as string;
         const stock = parseInt(formData.get("stock") as string);
         const category = formData.get("category") as string;
+        const imageUrl = formData.get("image") as string;
+
         const file = formData.get("image") as File;
 
         if (!name || isNaN(price) || !description || isNaN(stock) || !category || !file) {
@@ -88,22 +90,22 @@ export async function POST(req: Request) {
 
 
         // Proses upload ke S3
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}-${uuidv4()}.${fileExt}`;
-        const contentType = file.type;
+        // const buffer = Buffer.from(await file.arrayBuffer());
+        // const fileExt = file.name.split('.').pop();
+        // const fileName = `${Date.now()}-${uuidv4()}.${fileExt}`;
+        // const contentType = file.type;
 
-        await s3.send(
-            new PutObjectCommand({
-                Bucket: process.env.AWS_BUCKET_NAME!,
-                Key: fileName,
-                Body: buffer,
-                ContentType: contentType,
-                ACL: 'public-read',
-            })
-        );
+        // await s3.send(
+        //     new PutObjectCommand({
+        //         Bucket: process.env.AWS_BUCKET_NAME!,
+        //         Key: fileName,
+        //         Body: buffer,
+        //         ContentType: contentType,
+        //         ACL: 'public-read',
+        //     })
+        // );
 
-        const imageUrl = `${process.env.AWS_ENDPOINT}/${process.env.AWS_BUCKET_NAME}/${fileName}`;
+        // const imageUrl = `${process.env.AWS_ENDPOINT}/${process.env.AWS_BUCKET_NAME}/${fileName}`;
 
 
         const product = await prisma.product.create({
