@@ -101,7 +101,7 @@ export function DataViewLayout() {
                     </td>
                     <td className="px-6 py-4">
                       <Image
-                        src={cleanImagePath(product.image)}
+                        src={product.image || ""}
                         alt={product.name}
                         width={64}
                         height={64}
