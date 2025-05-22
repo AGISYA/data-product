@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-
 import { useState, useRef } from "react";
 import type { Product } from "@prisma/client";
 import Image from "next/image";
@@ -23,17 +22,31 @@ export default function EditModal({
   const [stock, setStock] = useState(product.stock);
   const [category, setCategory] = useState(product.category || "Makanan");
   const [imagePreview, setImagePreview] = useState(product.image || "");
+  const [imageError, setImageError] = useState<string | null>(null);
   const imageRef = useRef<HTMLInputElement>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 1024 * 1024) {
+        setImageError("Ukuran gambar tidak boleh lebih dari 1MB.");
+        return;
+      }
+      setImageError(null);
       setImagePreview(URL.createObjectURL(file));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (
+      imageRef.current?.files?.[0]?.size &&
+      imageRef.current.files[0].size > 1024 * 1024
+    ) {
+      setImageError("Ukuran gambar tidak boleh lebih dari 1MB.");
+      return;
+    }
 
     const formData = new FormData();
     formData.append("name", name);
@@ -52,7 +65,7 @@ export default function EditModal({
 
     if (response.ok) {
       onSubmit(formData);
-      onClose(); // Close modal after success
+      onClose();
     } else {
       alert("Terjadi kesalahan saat mengupdate produk.");
     }
@@ -65,13 +78,12 @@ export default function EditModal({
         onClick={onClose}
       />
       <form
-        className="bg-white rounded-lg p-6 z-50 w-full max-w-2xl shadow-xl"
+        className="bg-white rounded-lg p-6 z-50 w-full max-w-3xl shadow-xl"
         onSubmit={handleSubmit}
       >
         <h2 className="text-xl font-semibold mb-6">Edit Produk</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Left Column - Form Fields */}
           <div className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium mb-2">
@@ -100,26 +112,23 @@ export default function EditModal({
                 className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-600"
               />
             </div>
-
-            <div>
-              <label
-                htmlFor="description"
-                className="block text-sm font-medium mb-2"
-              >
-                Deskripsi
-              </label>
-              <textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                required
-                rows={3}
-                className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-600"
-              />
-            </div>
+          </div>{" "}
+          <div>
+            <label
+              htmlFor="description"
+              className="block text-sm font-medium mb-2"
+            >
+              Deskripsi
+            </label>
+            <textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              required
+              rows={3}
+              className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-600"
+            />
           </div>
-
-          {/* Right Column - More Fields and Image */}
           <div className="space-y-4">
             <div>
               <label htmlFor="stock" className="block text-sm font-medium mb-2">
@@ -153,42 +162,44 @@ export default function EditModal({
                 <option value="Minuman">Minuman</option>
               </select>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Gambar Saat Ini
-              </label>
-              {imagePreview && (
-                <div className="flex justify-center">
-                  <Image
-                    src={imagePreview || "/placeholder.svg"}
-                    alt="Preview"
-                    width={150}
-                    height={150}
-                    className="rounded-md"
-                  />
-                </div>
-              )}
-            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Gambar Saat Ini
+            </label>
+            {imagePreview && (
+              <div className="flex flex-col items-center gap-2 mt-2">
+                <Image
+                  src={imagePreview}
+                  alt="Preview"
+                  width={150}
+                  height={150}
+                  className="rounded-md object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => imageRef.current?.click()}
+                  className="px-4 py-2 bg-yellow-500 text-white rounded-md shadow-sm hover:bg-yellow-600 transition"
+                >
+                  Ubah Gambar
+                </button>
+                {imageError && (
+                  <p className="text-red-600 text-sm mt-1">{imageError}</p>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Upload Section */}
-        <div className="mt-4">
-          <label htmlFor="image" className="block text-sm font-medium mb-2">
-            Upload Gambar Baru
-          </label>
-          <input
-            ref={imageRef}
-            id="image"
-            type="file"
-            onChange={handleImageChange}
-            accept="image/*"
-            className="w-full p-2 border border-gray-300 rounded-md shadow-sm"
-          />
-        </div>
+        <input
+          ref={imageRef}
+          id="image"
+          type="file"
+          onChange={handleImageChange}
+          accept="image/*"
+          className="hidden"
+        />
 
-        {/* Action Buttons */}
         <div className="flex justify-end mt-6 gap-4">
           <button
             type="button"

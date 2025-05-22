@@ -14,7 +14,7 @@ export default function Home() {
       <h1 className="text-2xl font-bold text-black mb-6 text-center">
         Sistem Pendataan Product
       </h1>
-      <div className="w-full max-w-3xl bg-gray-50 rounded-md overflow-hidden shadow">
+      <div className="w-full max-h-full bg-gray-50 rounded-md overflow-hidden shadow">
         <Suspense fallback={<p>Loading feed...</p>}>
           <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
         </Suspense>
